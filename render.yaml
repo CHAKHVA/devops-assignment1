@@ -1,0 +1,47 @@
+# Render Blueprint - https://render.com/docs/blueprint-spec
+#
+# Defines the two web services used to simulate a blue/green deployment:
+#
+#   * app-blue   -> production  (the URL documented in the README)
+#   * app-green  -> staging     (CI deploys here first and runs smoke tests)
+#
+# Both services run the exact same code from this repository. The only
+# difference is the APP_COLOR env var, which the FastAPI app uses to
+# render its banner so blue/green are visually distinguishable.
+#
+# autoDeploy is set to false on both services so that deploys are only
+# ever triggered by GitHub Actions (after pytest passes), via the
+# Deploy Hook URLs configured as GitHub repo secrets.
+
+services:
+  - type: web
+    name: app-blue
+    runtime: python
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeploy: false
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_COLOR
+        value: blue
+      - key: PYTHON_VERSION
+        value: "3.13.13"
+
+  - type: web
+    name: app-green
+    runtime: python
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeploy: false
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_COLOR
+        value: green
+      - key: PYTHON_VERSION
+        value: "3.13.13"

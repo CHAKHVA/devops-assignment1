@@ -1,0 +1,7 @@
+# Drop the README's referenced screenshot files into this directory:
+#
+#   app-blue.png            - production home page (blue banner, /version showing prod SHA)
+#   app-green.png           - staging home page (green banner)
+#   actions-success.png     - a green CI/CD run on the Actions tab
+#   actions-failure.png     - a failing test run that blocked deployment
+#   render-rollback.png     - Render dashboard "Rollback to this deploy" view
