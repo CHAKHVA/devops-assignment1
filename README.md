@@ -8,15 +8,14 @@ the **blue** (production) Render service.
 
 | Environment       | URL                                                                    |
 | ----------------- | ---------------------------------------------------------------------- |
-| Production (blue) | <!-- TODO: paste BLUE_URL here, e.g. https://app-blue.onrender.com --> |
-| Staging (green)   | <!-- TODO: paste GREEN_URL here -->                                    |
+| Production (blue) | <https://app-blue.onrender.com/>                                       |
+| Staging (green)   | <https://app-green-ooln.onrender.com/>                                 |
 
 > Assignment brief: see [DESCRIPTION.md](DESCRIPTION.md).
 
 ## Screenshots
 
-Drop the PNG files into [`docs/screenshots/`](docs/screenshots/) using
-the exact filenames below and they will render here.
+Screenshots are in [`docs/screenshots/`](docs/screenshots/) folder.
 
 | Caption                               | File                                                     |
 | ------------------------------------- | -------------------------------------------------------- |
@@ -57,45 +56,37 @@ uvicorn app.main:app --reload
 
 Then open <http://127.0.0.1:8000>. Endpoints:
 
-- `GET /` &mdash; HTML page with a coloured banner showing
+- `GET /` - HTML page with a coloured banner showing
   `environment` (`blue`/`green`) and `version` (short git SHA).
-- `GET /health` &mdash; `{"status":"ok"}` (used by Render's health
+- `GET /health` - `{"status":"ok"}` (used by Render's health
   check and by the CI smoke tests).
-- `GET /version` &mdash; `{"name", "version", "color"}`. The `version`
+- `GET /version` - `{"name", "version", "color"}`. The `version`
   field is the first 7 chars of `RENDER_GIT_COMMIT`, which is how the
   smoke tests prove the new commit is actually live.
-- `GET /docs` &mdash; FastAPI's auto-generated OpenAPI UI.
+- `GET /docs` - FastAPI's auto-generated OpenAPI UI.
 
 ## Pipeline overview
 
-```mermaid
-flowchart LR
-    Push[git push main] --> Test["GitHub Actions: pytest"]
-    Test -->|fail| Stop[Pipeline stops &mdash; nothing deployed]
-    Test -->|pass| Green["deploy-green<br/>POST RENDER_DEPLOY_HOOK_GREEN"]
-    Green --> Smoke["scripts/smoke.sh GREEN_URL green ${SHA}"]
-    Smoke -->|fail| Stop
-    Smoke -->|pass| Blue["deploy-blue<br/>POST RENDER_DEPLOY_HOOK_BLUE"]
-    Blue --> VerifyBlue["scripts/smoke.sh BLUE_URL blue ${SHA}"]
-    VerifyBlue --> Users[Live production traffic]
+```text
+push main -> pytest -> deploy green -> smoke green -> deploy blue -> smoke blue -> production
 ```
 
 The full workflow lives at
 [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml). It has
 three jobs chained with `needs:` so each stage gates the next:
 
-1. **`test`** &mdash; sets up Python 3.13, installs
+1. **`test`** - sets up Python 3.13, installs
    `requirements-dev.txt`, runs `pytest`. Triggered on **every push and
    every pull request**, on every branch. If any test fails the
    pipeline stops here and no deployment happens.
-2. **`deploy-green`** &mdash; runs only on `push` events targeting
+2. **`deploy-green`** - runs only on `push` events targeting
    `main` and only if `test` succeeded. Triggers a Render deploy of
    `app-green` via its Deploy Hook, then runs
    [`scripts/smoke.sh`](scripts/smoke.sh) against `GREEN_URL`. The
    smoke script polls `/version` until the deployed commit matches
    `${{ github.sha }}`, then asserts `/health == ok` and
    `/version.color == "green"`.
-3. **`deploy-blue`** &mdash; runs only if `deploy-green` succeeded.
+3. **`deploy-blue`** - runs only if `deploy-green` succeeded.
    Triggers the Render deploy hook for `app-blue` and re-runs the
    smoke test against `BLUE_URL` to confirm the production service is
    on the new commit and healthy.
@@ -122,8 +113,7 @@ the pipeline level using two identical services defined in
 
 Both services run identical code from the same `main` branch. The
 `APP_COLOR` env var is the only thing that differs and is what makes
-the home page banner visibly blue or green &mdash; useful for
-screenshots and for the smoke test (`/version.color`).
+the home page banner visibly blue or green.
 
 ### How a release flows through the strategy
 
@@ -140,8 +130,8 @@ screenshots and for the smoke test (`/version.color`).
    production to confirm the promotion landed.
 
 The result is a manually-triggered "swap" that gives us the safety
-properties of blue-green &mdash; the new version runs in a live, real
-environment before any user traffic hits it &mdash; without needing a
+properties of blue-green - the new version runs in a live, real
+environment before any user traffic hits it - without needing a
 load balancer or a paid Render plan.
 
 ### Free-tier honesty
@@ -160,28 +150,26 @@ load balancer or a paid Render plan.
 If a regression makes it past green and lands on `app-blue`, there are
 two supported rollback paths.
 
-### Path A &mdash; Render Deploy History (fastest, ~30 seconds)
+### Path A - Render Deploy History (fastest, ~30 seconds)
 
 Use this when you want production back **immediately** without waiting
 for a new pipeline run.
 
 1. Sign in to <https://dashboard.render.com>.
 2. Open the **`app-blue`** service.
-3. Click **Events** (or **Deploys**) in the left-hand sidebar.
+3. Click **Events** in the left-hand sidebar.
 4. Find the last known-good deploy (each entry shows its commit SHA;
    match against your git history).
-5. Click the **&hellip;** menu on that row &rarr; **Rollback to this
-   deploy**.
+5. Click **Rollback**.
 6. Render rebuilds and serves that previous commit. Confirm by
-   `curl https://<BLUE_URL>/version` &mdash; the `version` field should
-   show the older short SHA.
+   `curl https://app-blue.onrender.com/version` - the `version` field should show the older short SHA.
 7. (Optional) Repeat the same steps on `app-green` so staging matches.
 
 This rollback does **not** revert the git history, so the next push to
 `main` would re-deploy the bad commit. Follow up with Path B to fix the
 source of truth.
 
-### Path B &mdash; `git revert` (clean history, full pipeline)
+### Path B - `git revert` (clean history, full pipeline)
 
 Use this when you want the rollback represented in git as well, so the
 pipeline naturally re-runs and verifies the rollback the same way it
@@ -191,7 +179,7 @@ verifies any other release.
 # Find the bad commit
 git log --oneline
 
-# Create a revert commit on main (or a PR if main is protected)
+# Create a revert commit on main or create PR
 git revert <bad-commit-sha>
 git push origin main
 ```
@@ -205,7 +193,7 @@ git history shows clearly what was rolled back and why.
 
 | Situation                                           | Recommended path                   |
 | --------------------------------------------------- | ---------------------------------- |
-| Production is broken right now &mdash; need it up   | Path A, then Path B as a follow-up |
+| Production is broken right now - need it up   | Path A, then Path B as a follow-up |
 | Bad commit found but production still working       | Path B (clean history, no rush)    |
 | Render dashboard inaccessible / outage on Render UI | Path B                             |
 
@@ -227,7 +215,7 @@ These steps are only performed once per repository.
    &rarr; **Settings &rarr; Deploy Hook** &rarr; copy the URL.
 6. **Copy each service's public URL** from the top of its dashboard
    page (e.g. `https://app-blue.onrender.com`).
-7. **Add GitHub repository secrets** &mdash; **Settings &rarr; Secrets
+7. **Add GitHub repository secrets** - **Settings &rarr; Secrets
    and variables &rarr; Actions &rarr; Secrets &rarr; New repository
    secret**:
 
