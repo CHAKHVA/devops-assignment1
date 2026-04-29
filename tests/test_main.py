@@ -4,8 +4,6 @@ These run in GitHub Actions on every push and pull request. Failing any
 of these tests blocks the deployment pipeline (the CI quality gate).
 """
 
-from __future__ import annotations
-
 from fastapi.testclient import TestClient
 
 from app.main import APP_NAME, app
@@ -44,6 +42,6 @@ def test_index_renders_html_with_version_banner() -> None:
 
 
 def test_docs_endpoint_available() -> None:
-    """FastAPI's auto-generated OpenAPI UI must be reachable; we screenshot it."""
+    """FastAPI's auto-generated OpenAPI UI must be reachable."""
     response = client.get("/docs")
     assert response.status_code == 200
