@@ -1,5 +1,3 @@
-# Render Blueprint - https://render.com/docs/blueprint-spec
-#
 # Defines the two web services used to simulate a blue/green deployment:
 #
 #   * app-blue   -> production  (the URL documented in the README)
