@@ -8,8 +8,6 @@ to make blue/green promotions and rollbacks visually obvious:
 - ``GET /version`` : reports the running git commit (set by Render)
 """
 
-from __future__ import annotations
-
 import os
 
 from fastapi import FastAPI
@@ -18,7 +16,7 @@ from fastapi.responses import HTMLResponse
 APP_NAME = "DevOps Assignment 1 - CI/CD Demo"
 
 # Render injects the deployed commit SHA via RENDER_GIT_COMMIT.
-# Locally / in tests we fall back to "dev" so the app still works.
+# Locally and in tests we fall back to "dev" so the app still works.
 APP_VERSION = (os.getenv("RENDER_GIT_COMMIT") or "dev")[:7]
 
 # The "color" lets us distinguish the blue (prod) and green (staging)
@@ -52,9 +50,7 @@ def index() -> str:
             border-radius: 8px;
           }}
           code {{
-            background: #f6f8fa;
             padding: 2px 6px;
-            border-radius: 4px;
           }}
           ul {{ line-height: 1.8; }}
         </style>
