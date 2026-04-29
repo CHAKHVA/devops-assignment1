@@ -47,3 +47,7 @@ def test_docs_endpoint_available() -> None:
     """FastAPI's auto-generated OpenAPI UI must be reachable; we screenshot it."""
     response = client.get("/docs")
     assert response.status_code == 200
+
+
+def test_intentionally_broken_for_demo() -> None:
+    assert 1 == 2
