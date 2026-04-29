@@ -4,7 +4,7 @@
 #
 # Usage: scripts/smoke.sh <base-url> <expected-color> <expected-sha>
 #
-#   base-url        e.g. https://app-green.onrender.com
+#   base-url        e.g. https://app-green-ooln.onrender.com
 #   expected-color  "blue" or "green"
 #   expected-sha    full git SHA of the commit that should be live
 #                   (the script compares the first 7 chars)
