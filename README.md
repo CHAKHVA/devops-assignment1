@@ -193,7 +193,7 @@ git history shows clearly what was rolled back and why.
 
 | Situation                                           | Recommended path                   |
 | --------------------------------------------------- | ---------------------------------- |
-| Production is broken right now - need it up   | Path A, then Path B as a follow-up |
+| Production is broken right now - need it up         | Path A, then Path B as a follow-up |
 | Bad commit found but production still working       | Path B (clean history, no rush)    |
 | Render dashboard inaccessible / outage on Render UI | Path B                             |
 
